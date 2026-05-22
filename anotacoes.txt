@@ -1,0 +1,10 @@
+-CRUD
+-Usar apenas o que foi passado em aula e apenas isso.
+-Lista de compras.
+-Constituição de um produto: nome, preço, quantidade, categoria(limpeza, condimento etc.)
+
+
+variáveis?funções:
+-'_carregarListaCompra':função que carrega a lista "_listaCompra"
+-'_listaCompra': a lista dentro da classe _homeScreen que usa o objeto(classe) 'produto', declarado em produto_model, para fazer uma lista. 
+-'_adicionarProduto':função que adiciona produtos ao programa/banco

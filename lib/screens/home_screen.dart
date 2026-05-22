@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   preco:double.parse(precoProdutoController.text),
                   quantidade:int.parse(quantidadeProdutoController.text),
                 );
-                print(produto)
+                print(produto);
                 _salvarProduto(dadosProduto);
               },
               child: Text("Salvar")
@@ -74,8 +74,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _carregarListaCompra() async {
+    final produtos = await bancoProduto.listarProdutos();
+    setState(() {
+      _listaCompra = produtos;
+    });
+  }
 
+  void _salvarProduto(ProdutoModel produto) async {
+    bool modoedicao = produto.id == null;
 
+    if(modoedicao){
+      await bancoProduto.adicionarProduto(produto);
+    }else{
+      await bancoProduto.atualizarProduto(produto);
+    }
+    _carregarListaCompra();
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(modoedicao? "Produto adicionado com sucesso!":"Produto atualizado com sucesso!"))
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
