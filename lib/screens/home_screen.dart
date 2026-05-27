@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/banco_service.dart';
+import '../model/produto_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +13,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   BancoService bancoProduto = BancoService();
   List<ProdutoModel> _listaCompra = [];
+  final nomeProdutoController = TextEditingController();
+  final descricaoProdutoController = TextEditingController();
+  final precoProdutoController = TextEditingController();
+  final quantidadeProdutoController = TextEditingController();
 
   @override
   void initState(){
@@ -18,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _carregarListaCompra();
   }
 
-  void abrirFormulario({ProdutoModel? produto}){
+  void abrirFormulario(ProdutoModel? produto){
     //talvez volto aqui
     showDialog(
       context: context, 
@@ -27,22 +33,27 @@ class _HomeScreenState extends State<HomeScreen> {
           title: Text(produto == null? "Adicionar Produto":"Editar Produto"),
           content: SingleChildScrollView(
             child:Column(
-              mainAxisAlignment: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   decoration: InputDecoration(labelText: "Nome do Produto"),
+                  controller: nomeProdutoController,
                 ),
                 TextField(
                   decoration: InputDecoration(labelText: "Descrição do Produto"),
+                  controller: descricaoProdutoController,
                 ),
                 TextField(
                   decoration: InputDecoration(labelText: "Preço do Produto"),
+                  controller: precoProdutoController,
                 ),
                 TextField(
                   decoration: InputDecoration(labelText: "Quantidade do Produto"),
+                  controller: quantidadeProdutoController,
                 ),
                 TextField(
                   decoration: InputDecoration(labelText: "Categoria do Produto"),
+                  // opcional: adicione controller se quiser salvar categoria
                 )
               ],
             )
@@ -58,10 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 final dadosProduto=ProdutoModel(
                   id: produto?.id,
-                  nome:nomeProdutoController.text,
-                  descricao:descricaoProdutoController.text, 
-                  preco:double.parse(precoProdutoController.text),
-                  quantidade:int.parse(quantidadeProdutoController.text),
+                      nome: nomeProdutoController.text,
+                      descricao: descricaoProdutoController.text, 
+                      preco: double.tryParse(precoProdutoController.text) ?? 0.0,
+                      quantidade: int.tryParse(quantidadeProdutoController.text) ?? 0,
                 );
                 print(produto);
                 _salvarProduto(dadosProduto);
@@ -74,8 +85,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _editarProduto(int index) {
+    final produto = _listaCompra[index];
+    nomeProdutoController.text = produto.nome;
+    descricaoProdutoController.text = produto.descricao;
+    precoProdutoController.text = produto.preco.toString();
+    quantidadeProdutoController.text = produto.quantidade.toString();
+    abrirFormulario(produto);
+  }
+
+  void _excluirProduto(int index) async {
+    final produto = _listaCompra[index];
+    if (produto.id != null) {
+      await bancoProduto.deletarProduto(produto.id!);
+      _carregarListaCompra();
+    }
+  }
+
+  @override
+  void dispose() {
+    nomeProdutoController.dispose();
+    descricaoProdutoController.dispose();
+    precoProdutoController.dispose();
+    quantidadeProdutoController.dispose();
+    super.dispose();
+  }
+
   void _carregarListaCompra() async {
-    final produtos = await bancoProduto.listarProdutos();
+    final produtos = await bancoProduto.obterprodutos();
     setState(() {
       _listaCompra = produtos;
     });
@@ -85,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     bool modoedicao = produto.id == null;
 
     if(modoedicao){
-      await bancoProduto.adicionarProduto(produto);
+      await bancoProduto.inserirProduto(produto);
     }else{
       await bancoProduto.atualizarProduto(produto);
     }
@@ -112,8 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
             return Card(
               margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child:ListTile(
-                title:Text(produto.nomeProduto),
-                subtitle:Text("R\$ ${produto.preco}-${preco-quantidade}"),
+                title:Text(_listaCompra[index].nome),
+                subtitle:Text("R\$ ${_listaCompra[index].preco}-${_listaCompra[index].quantidade}"),
                 leading: Icon(icon, color: Colors.blue[500]),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -141,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
         drawer: Container(),
         endDrawer: Container(),
         floatingActionButton: FloatingActionButton(
-          onPressed: _adicionarProduto,
+          onPressed:() =>abrirFormulario(null),
           child: const Icon(Icons.add),
         ),
 
