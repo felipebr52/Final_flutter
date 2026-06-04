@@ -22,11 +22,12 @@ class BancoService {
       onCreate: (db, version) async {
         await db.execute('''
             CREATE TABLE produtos(
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-               nome TEXT,
-               descricao TEXT,
-               preco REAL,
-               quantidade INTEGER
+               idProduto INTEGER PRIMARY KEY AUTOINCREMENT,
+               nomeProduto TEXT,
+               categoriaProduto TEXT,
+               precoProduto REAL,
+               quantidadeProduto INTEGER,
+                statusProduto TinyINT(1)
             )''');
       },
     );
@@ -61,22 +62,25 @@ class BancoService {
   Future<int> atualizarProduto(ProdutoModel produto) async {
     try {
       final db = await abriBanco();
+      final valores = Map<String, dynamic>.from(produto.toMap());
+      valores.remove('idProduto');
       final id = await db.update(
         'produtos',
-        produto.toMap(),
-        where: 'id = ?',
-        whereArgs: [produto.id],
+        valores,
+        where: 'idProduto = ?',
+        whereArgs: [produto.idProduto],
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       return id;
     } catch (erro) {
+      print(erro.toString());
       return 0;
     }
   }
 
   Future<int> deletarProduto(int id) async {
     final db = await abriBanco();
-    return await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('produtos', where: 'idProduto = ?', whereArgs: [id]);
   }
   
   

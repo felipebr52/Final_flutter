@@ -13,6 +13,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   BancoService bancoProduto = BancoService();
   List<ProdutoModel> _listaCompra = [];
+  final idProdutoController = TextEditingController();
+  final categoriaProdutoController = TextEditingController();
   final nomeProdutoController = TextEditingController();
   final descricaoProdutoController = TextEditingController();
   final precoProdutoController = TextEditingController();
@@ -68,11 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               onPressed: () {
                 final dadosProduto=ProdutoModel(
-                  id: produto?.id,
-                      nome: nomeProdutoController.text,
-                      descricao: descricaoProdutoController.text, 
-                      preco: double.tryParse(precoProdutoController.text) ?? 0.0,
-                      quantidade: int.tryParse(quantidadeProdutoController.text) ?? 0,
+                  idProduto: produto?.idProduto,
+                      nomeProduto: nomeProdutoController.text,
+                      categoriaProduto: categoriaProdutoController.text,  
+                      precoProduto: double.tryParse(precoProdutoController.text) ?? 0.0,
+                      quantidadeProduto: int.tryParse(quantidadeProdutoController.text) ?? 0,
                 );
                 print(produto);
                 _salvarProduto(dadosProduto);
@@ -87,17 +89,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _editarProduto(int index) {
     final produto = _listaCompra[index];
-    nomeProdutoController.text = produto.nome;
-    descricaoProdutoController.text = produto.descricao;
-    precoProdutoController.text = produto.preco.toString();
-    quantidadeProdutoController.text = produto.quantidade.toString();
+    nomeProdutoController.text = produto.nomeProduto;
+    descricaoProdutoController.text = produto.categoriaProduto ?? "";
+    precoProdutoController.text = produto.precoProduto.toString();
+    quantidadeProdutoController.text = produto.quantidadeProduto.toString();
     abrirFormulario(produto);
   }
 
   void _excluirProduto(int index) async {
     final produto = _listaCompra[index];
-    if (produto.id != null) {
-      await bancoProduto.deletarProduto(produto.id!);
+    if (produto.idProduto != null) {
+      await bancoProduto.deletarProduto(produto.idProduto!);
       _carregarListaCompra();
     }
   }
@@ -119,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _salvarProduto(ProdutoModel produto) async {
-    bool modoedicao = produto.id == null;
+    bool modoedicao = produto.idProduto == null;
 
     if(modoedicao){
       await bancoProduto.inserirProduto(produto);
@@ -149,9 +151,9 @@ class _HomeScreenState extends State<HomeScreen> {
             return Card(
               margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child:ListTile(
-                title:Text(_listaCompra[index].nome),
-                subtitle:Text("R\$ ${_listaCompra[index].preco}-${_listaCompra[index].quantidade}"),
-                leading: Icon(icon, color: Colors.blue[500]),
+                title:Text(_listaCompra[index].nomeProduto),
+                subtitle:Text("R\$ ${_listaCompra[index].precoProduto}-${_listaCompra[index].quantidadeProduto}"),
+                leading: Icon(Icons.shopping_cart, color: Colors.blue[500]),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
